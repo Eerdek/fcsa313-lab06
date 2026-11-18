@@ -1,0 +1,20 @@
+# Category-partition model for POST /transfer
+# ~ = [ERROR] value (PICT puts at most one negative value per test case)
+
+From:       Active, ~Frozen, ~Missing
+To:         OtherExisting, ~SameAsFrom, ~Missing
+AmountSign: Positive, ~Zero, ~Negative
+Currency:   Same, Different
+Rate:       None, GreaterThanOne, LessThanOne
+Balance:    Below, Equal, ~Above
+Limit:      Below, Equal, ~Above
+
+# [IF convert] / [IF sameCur]: exchange rate only matters when currency differs
+IF [Currency] = "Same" THEN [Rate] = "None" ELSE [Rate] <> "None";
+
+# [IF positive]: balance and limit checks are meaningful only for amount > 0
+IF [AmountSign] <> "Positive" THEN [Balance] = "Below" AND [Limit] = "Below";
+
+# [SINGLE]: boundary "Equal" values are tested only with base values of the others
+IF [Balance] = "Equal" THEN [Limit] = "Below" AND [Currency] = "Same";
+IF [Limit] = "Equal" THEN [Balance] = "Below" AND [Currency] = "Same";
