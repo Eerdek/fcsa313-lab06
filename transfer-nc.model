@@ -1,0 +1,9 @@
+# POST /transfer - Part A choices translated to PICT, NO constraints.
+# Amount is the converted amount x compared with the from-balance B and the remaining daily limit R.
+# LimitUsed is the hidden environment choice (how much of today's limit was already used).
+# (Part A's L3 "Full" is not a separate value here: with R = 0 any positive amount is OverLimit.)
+From:      Valid, Frozen, Missing
+To:        Valid, Missing, SameAsFrom, Frozen
+Amount:    Normal, Zero, Negative, EqualBalance, OverBalance, EqualLimit, OverLimit
+Currency:  Same, Different
+LimitUsed: None, Partial

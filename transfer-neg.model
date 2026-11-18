@@ -1,0 +1,14 @@
+# POST /transfer - Part A [ERROR] values marked with ~ (negative values: at most one per row).
+# To=Frozen is NOT ~ : it is [SINGLE] (the spec is silent, literal reading = 201 OK).
+# The A2 [IF hasAccount] constraint is kept: ~ limits errors per row but does not remove
+# impossible combinations (Missing from-account cannot be paired with balance/limit values).
+From:      Valid, ~Frozen, ~Missing
+To:        Valid, ~Missing, ~SameAsFrom, Frozen
+Amount:    Normal, ~Zero, ~Negative, EqualBalance, ~OverBalance, EqualLimit, ~OverLimit
+Currency:  Same, Different
+LimitUsed: None, Partial
+
+IF [From] = "Missing" THEN [To] <> "SameAsFrom"
+                       AND [Amount] IN {"Normal", "Zero", "Negative"}
+                       AND [Currency] = "Same"
+                       AND [LimitUsed] = "None";

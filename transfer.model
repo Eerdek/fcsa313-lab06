@@ -1,0 +1,15 @@
+# POST /transfer - same parameters as transfer-nc.model + Part A2 [IF hasAccount] constraints.
+# A missing from-account has no balance, no daily limit and no account currency, so
+# EqualBalance/OverBalance/EqualLimit/OverLimit, "Different" and "Partial" are meaningless with it,
+# and "to = from" with a missing from is just another missing account.
+# (Same/None are used as the neutral filler values for such rows.)
+From:      Valid, Frozen, Missing
+To:        Valid, Missing, SameAsFrom, Frozen
+Amount:    Normal, Zero, Negative, EqualBalance, OverBalance, EqualLimit, OverLimit
+Currency:  Same, Different
+LimitUsed: None, Partial
+
+IF [From] = "Missing" THEN [To] <> "SameAsFrom"
+                       AND [Amount] IN {"Normal", "Zero", "Negative"}
+                       AND [Currency] = "Same"
+                       AND [LimitUsed] = "None";
