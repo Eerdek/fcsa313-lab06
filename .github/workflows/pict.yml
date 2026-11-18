@@ -1,0 +1,54 @@
+# Builds Microsoft PICT from source on Ubuntu (Lab06 step 1, same commands as the lab sheet)
+# and regenerates every results/*.txt from the committed *.model files.
+# If results/ is committed, the last check fails when the committed files differ from PICT's output.
+name: pict
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pict:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build PICT from source (outside the repo, in ~/tools/pict)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git cmake g++ make
+          mkdir -p ~/tools && cd ~/tools
+          git clone https://github.com/microsoft/pict && cd pict
+          git checkout --quiet ab76c25   # pinned so every run gives identical output
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j4
+          sudo cp build/cli/pict /usr/local/bin/
+
+      - name: Build evidence (results/pict-build.txt)
+        run: |
+          mkdir -p results
+          ( git -C ~/tools/pict log -1 --format='pict commit %h %ad' --date=short; { pict 2>&1 || true; } | head -3 ) | tee results/pict-build.txt
+
+      - name: Run models
+        run: |
+          if [ -f browser.model ]; then
+            pict browser.model | tee results/browser-2way.txt
+            pict browser.model /o:3 > results/browser-3way.txt
+          fi
+          for m in transfer-nc transfer transfer-neg; do
+            if [ -f "$m.model" ]; then pict "$m.model" > "results/$m.txt"; fi
+          done
+          if [ -f ai/ai-transfer.model ]; then pict ai/ai-transfer.model > results/ai-transfer.txt; fi
+          for f in results/*.txt; do echo "$f: $(tail -n +2 "$f" | wc -l) lines after header"; done
+
+      - name: Committed results must equal regenerated output
+        run: git diff --exit-code -- results/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: results/

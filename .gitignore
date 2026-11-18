@@ -1,0 +1,13 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# PICT source and build output must stay OUTSIDE this repo (~/tools/pict)
+pict/
+build/
+
+# Teacher's instructions (.docx) and Office temp files - never commit
+*.docx
+~$*
